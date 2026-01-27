@@ -308,8 +308,8 @@
             
             <h3>Information You Provide Directly</h3>
             <ul>
-                <li><strong>Account Information:</strong> When you register, we collect your name, email address (typically your .edu email for verification), password, university affiliation, and profile information (such as profile picture, bio, and major).</li>
-                <li><strong>User Content:</strong> Posts, comments, messages, photos, videos, and other content you create or share on the platform.</li>
+                <li><strong>Account Information:</strong> When you register, we collect your name, educational email address (for verification), password, university/college/department affiliation, academic stage, and profile information (such as profile picture, bio, and social links).</li>
+                <li><strong>User Content:</strong> Posts, replies, messages, photos, and other content you create or share on the platform.</li>
                 <li><strong>Communications:</strong> Messages you send to other users, feedback you provide to us, and any communication with our support team.</li>
                 <li><strong>Survey Responses:</strong> Information you provide in surveys, polls, or feedback forms.</li>
             </ul>
@@ -318,7 +318,7 @@
             <ul>
                 <li><strong>Device Information:</strong> Device type, operating system, unique device identifiers, and mobile network information.</li>
                 <li><strong>Log Data:</strong> IP address, browser type, pages visited, time and date of visits, time spent on pages, and other diagnostic data.</li>
-                <li><strong>Location Information:</strong> With your consent, we may collect precise location data to show you relevant campus content and nearby events.</li>
+                <li><strong>Push Notification Tokens:</strong> Device tokens for delivering push notifications when enabled.</li>
                 <li><strong>Usage Data:</strong> Information about how you interact with our Service, including features used, content viewed, and actions taken.</li>
             </ul>
             
@@ -397,13 +397,13 @@
         <!-- Data Security -->
         <section class="policy-section">
             <h2><span class="icon">🔒</span> Data Security</h2>
-            <p>We implement industry-standard security measures to protect your information:</p>
+            <p>We implement security measures to protect your information:</p>
             <ul>
-                <li><strong>Encryption:</strong> All data is encrypted in transit (TLS/SSL) and at rest (AES-256)</li>
-                <li><strong>End-to-End Encryption:</strong> Private messages between users are end-to-end encrypted</li>
+                <li><strong>Encryption:</strong> All data is encrypted in transit using TLS/SSL</li>
+                <li><strong>Secure Authentication:</strong> Password hashing and secure session management via Appwrite</li>
                 <li><strong>Access Controls:</strong> Strict access controls limit who can access user data</li>
-                <li><strong>Regular Audits:</strong> We conduct regular security assessments and penetration testing</li>
-                <li><strong>Secure Infrastructure:</strong> Our servers are hosted in secure, SOC 2 compliant data centers</li>
+                <li><strong>Email Verification:</strong> OTP verification required before account activation</li>
+                <li><strong>User Controls:</strong> Block users, report content, and control your privacy settings</li>
             </ul>
             
             <div class="highlight-box">
@@ -433,18 +433,18 @@
             <h3>Privacy Settings</h3>
             <p>Within the app, you can control:</p>
             <ul>
-                <li>Who can see your profile and posts</li>
-                <li>Who can send you messages</li>
-                <li>Push notification preferences</li>
-                <li>Location sharing settings</li>
+                <li>Who can see your social links (everyone, followers, or no one)</li>
+                <li>Mute specific chats and conversations</li>
+                <li>Push notification preferences (likes, replies, mentions, chats)</li>
+                <li>Block users from interacting with you</li>
             </ul>
             
             <h3>Opt-Out</h3>
             <p>You can opt out of:</p>
             <ul>
-                <li>Marketing emails (via unsubscribe link)</li>
-                <li>Push notifications (via device settings)</li>
-                <li>Location tracking (via app permissions)</li>
+                <li>Push notifications (via app settings or device settings)</li>
+                <li>Specific notification types (likes, replies, mentions, chats)</li>
+                <li>Quiet hours to pause notifications during specific times</li>
             </ul>
         </section>
         
