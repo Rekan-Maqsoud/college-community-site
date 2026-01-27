@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms of Service - College Community</title>
+    <link rel="icon" type="image/png" href="icon.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: #1a1a24;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b0;
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+            --accent-gradient: linear-gradient(135deg, #3b82f6, #8b5cf6);
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.8;
+        }
+        
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            backdrop-filter: blur(20px);
+            background: rgba(10, 10, 15, 0.9);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+        
+        .nav-logo img {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+        }
+        
+        .nav-logo span {
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+        
+        .nav-back {
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: opacity 0.3s;
+        }
+        
+        .nav-back:hover {
+            opacity: 0.8;
+        }
+        
+        /* Main Content */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 120px 24px 80px;
+        }
+        
+        .page-header {
+            text-align: center;
+            margin-bottom: 48px;
+            padding-bottom: 32px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .page-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .page-header .updated {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+        
+        /* Content Sections */
+        .terms-section {
+            margin-bottom: 40px;
+        }
+        
+        .terms-section h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+        
+        .terms-section h3 {
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin: 24px 0 12px;
+            color: var(--text-primary);
+        }
+        
+        .terms-section p {
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+        
+        .terms-section ul, .terms-section ol {
+            color: var(--text-secondary);
+            margin-left: 24px;
+            margin-bottom: 16px;
+        }
+        
+        .terms-section li {
+            margin-bottom: 8px;
+        }
+        
+        .terms-section strong {
+            color: var(--text-primary);
+        }
+        
+        .highlight-box {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .highlight-box.important {
+            border-color: rgba(59, 130, 246, 0.3);
+            background: rgba(59, 130, 246, 0.05);
+        }
+        
+        .highlight-box.warning {
+            border-color: rgba(239, 68, 68, 0.3);
+            background: rgba(239, 68, 68, 0.05);
+        }
+        
+        /* Contact Section */
+        .contact-box {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 32px;
+            text-align: center;
+            margin-top: 48px;
+        }
+        
+        .contact-box h3 {
+            font-size: 1.3rem;
+            margin-bottom: 12px;
+        }
+        
+        .contact-box p {
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+        
+        .contact-box a {
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .contact-box a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Footer */
+        footer {
+            padding: 32px 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            text-align: center;
+        }
+        
+        footer a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            margin: 0 16px;
+            font-size: 0.9rem;
+        }
+        
+        footer a:hover {
+            color: var(--text-primary);
+        }
+        
+        footer p {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-top: 16px;
+        }
+        
+        /* Mobile */
+        @media (max-width: 768px) {
+            nav {
+                padding: 16px 20px;
+            }
+            
+            .container {
+                padding: 100px 16px 60px;
+            }
+            
+            .page-header h1 {
+                font-size: 2rem;
+            }
+            
+            .terms-section h2 {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <a href="index.html" class="nav-logo">
+            <img src="icon.png" alt="College Community">
+            <span>College Community</span>
+        </a>
+        <a href="index.html" class="nav-back">← Back to Home</a>
+    </nav>
+    
+    <div class="container">
+        <div class="page-header">
+            <h1>Terms of Service</h1>
+            <p class="updated">Last Updated: January 27, 2026</p>
+        </div>
+        
+        <!-- Agreement -->
+        <section class="terms-section">
+            <h2>1. Agreement to Terms</h2>
+            <p>By accessing or using College Community ("the App," "the Service," "we," "us," or "our"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, you may not access or use the Service.</p>
+            
+            <div class="highlight-box important">
+                <p><strong>Important:</strong> These Terms constitute a legally binding agreement between you and College Community. Please read them carefully before using our Service.</p>
+            </div>
+        </section>
+        
+        <!-- Eligibility -->
+        <section class="terms-section">
+            <h2>2. Eligibility</h2>
+            <p>To use College Community, you must:</p>
+            <ul>
+                <li>Be at least 17 years of age</li>
+                <li>Be a current student at a recognized college or university</li>
+                <li>Have a valid educational email address for verification</li>
+                <li>Have the legal capacity to enter into these Terms</li>
+                <li>Not be prohibited from using the Service under applicable laws</li>
+            </ul>
+            <p>By using the Service, you represent and warrant that you meet all eligibility requirements.</p>
+        </section>
+        
+        <!-- Account Registration -->
+        <section class="terms-section">
+            <h2>3. Account Registration</h2>
+            <p>To access most features of the Service, you must create an account. When registering, you agree to:</p>
+            <ul>
+                <li>Provide accurate, current, and complete information</li>
+                <li>Use only your own educational email address</li>
+                <li>Maintain the security of your password and account</li>
+                <li>Notify us immediately of any unauthorized access</li>
+                <li>Accept responsibility for all activities under your account</li>
+            </ul>
+            
+            <h3>Educational Email Verification</h3>
+            <p>We require verification through an educational email address to ensure our community consists of genuine students. Public email providers (such as Gmail, Yahoo, Outlook, etc.) are not accepted for registration.</p>
+            
+            <h3>Account Information Changes</h3>
+            <p>Academic information (university, college, department, stage) may be subject to a 30-day cooldown period after changes to prevent misuse.</p>
+        </section>
+        
+        <!-- Acceptable Use -->
+        <section class="terms-section">
+            <h2>4. Acceptable Use</h2>
+            <p>You agree to use the Service only for lawful purposes and in accordance with these Terms. You agree NOT to:</p>
+            
+            <h3>Content Restrictions</h3>
+            <ul>
+                <li>Post content that is illegal, harmful, threatening, abusive, harassing, defamatory, vulgar, obscene, or otherwise objectionable</li>
+                <li>Share content that infringes on intellectual property rights of others</li>
+                <li>Post spam, advertisements, or promotional material without authorization</li>
+                <li>Share misleading or false information</li>
+                <li>Post content that violates the privacy of others</li>
+            </ul>
+            
+            <h3>Behavioral Restrictions</h3>
+            <ul>
+                <li>Impersonate any person or entity, or falsely claim affiliation with any person or entity</li>
+                <li>Harass, bully, stalk, or intimidate other users</li>
+                <li>Create multiple accounts for deceptive purposes</li>
+                <li>Interfere with or disrupt the Service or servers</li>
+                <li>Attempt to gain unauthorized access to any part of the Service</li>
+                <li>Use automated systems (bots, scrapers) without permission</li>
+                <li>Collect or harvest user information without consent</li>
+            </ul>
+            
+            <div class="highlight-box warning">
+                <p><strong>Warning:</strong> Violation of these terms may result in immediate account suspension or termination without prior notice.</p>
+            </div>
+        </section>
+        
+        <!-- User Content -->
+        <section class="terms-section">
+            <h2>5. User Content</h2>
+            
+            <h3>Your Content</h3>
+            <p>You retain ownership of the content you create and share on the Service, including posts, replies, messages, and images ("User Content"). By posting User Content, you grant College Community a non-exclusive, royalty-free, worldwide license to use, display, reproduce, and distribute your content in connection with operating the Service.</p>
+            
+            <h3>Content Responsibility</h3>
+            <p>You are solely responsible for your User Content. We do not endorse or guarantee the accuracy, completeness, or usefulness of any User Content. You agree that any User Content you post does not violate these Terms or any applicable laws.</p>
+            
+            <h3>Content Moderation</h3>
+            <p>We reserve the right, but are not obligated, to:</p>
+            <ul>
+                <li>Monitor User Content for violations of these Terms</li>
+                <li>Remove or disable access to any User Content at our discretion</li>
+                <li>Take action against accounts that violate these Terms</li>
+                <li>Report illegal content to appropriate authorities</li>
+            </ul>
+            
+            <h3>Reporting Content</h3>
+            <p>You can report inappropriate content using the in-app reporting feature. We will review reports and take appropriate action.</p>
+        </section>
+        
+        <!-- Features and Services -->
+        <section class="terms-section">
+            <h2>6. Features and Services</h2>
+            
+            <h3>Feed and Posts</h3>
+            <p>The Service provides department-specific feeds where you can share questions, discussions, notes, and announcements with your academic community. Posts may be visible to users in your department, college, or publicly, depending on your settings.</p>
+            
+            <h3>Chat System</h3>
+            <p>The Service includes group chats (auto-created for your class and department, plus custom groups) and private messaging. You agree to use the chat features responsibly and in accordance with these Terms.</p>
+            
+            <h3>Notifications</h3>
+            <p>By using the Service, you may receive push notifications about activity relevant to you (likes, replies, mentions, messages). You can manage notification preferences in the app settings.</p>
+            
+            <h3>Class Representatives</h3>
+            <p>Some users may be designated as class representatives with additional posting privileges in group chats. This role comes with additional responsibility to maintain community standards.</p>
+        </section>
+        
+        <!-- Intellectual Property -->
+        <section class="terms-section">
+            <h2>7. Intellectual Property</h2>
+            <p>The Service and its original content (excluding User Content), features, and functionality are owned by College Community and are protected by copyright, trademark, and other intellectual property laws.</p>
+            <p>You may not copy, modify, distribute, sell, or lease any part of our Service or included software, nor may you reverse engineer or attempt to extract the source code of that software.</p>
+        </section>
+        
+        <!-- Privacy -->
+        <section class="terms-section">
+            <h2>8. Privacy</h2>
+            <p>Your use of the Service is also governed by our <a href="privacy.html" style="color: var(--accent-blue);">Privacy Policy</a>, which describes how we collect, use, and protect your information. By using the Service, you consent to our collection and use of your information as described in the Privacy Policy.</p>
+        </section>
+        
+        <!-- Termination -->
+        <section class="terms-section">
+            <h2>9. Termination</h2>
+            
+            <h3>By You</h3>
+            <p>You may delete your account at any time through the app settings. Upon deletion, your profile and posts will be removed from the platform, though some information may be retained as described in our Privacy Policy.</p>
+            
+            <h3>By Us</h3>
+            <p>We may suspend or terminate your account and access to the Service at any time, with or without cause, and with or without notice. Reasons for termination may include, but are not limited to:</p>
+            <ul>
+                <li>Violation of these Terms</li>
+                <li>Conduct that we believe is harmful to other users or the Service</li>
+                <li>Extended periods of inactivity</li>
+                <li>Requests by law enforcement or government agencies</li>
+            </ul>
+        </section>
+        
+        <!-- Disclaimers -->
+        <section class="terms-section">
+            <h2>10. Disclaimers</h2>
+            <p>THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.</p>
+            <p>We do not warrant that:</p>
+            <ul>
+                <li>The Service will be uninterrupted, secure, or error-free</li>
+                <li>Results obtained from using the Service will be accurate or reliable</li>
+                <li>The quality of any information obtained through the Service will meet your expectations</li>
+            </ul>
+        </section>
+        
+        <!-- Limitation of Liability -->
+        <section class="terms-section">
+            <h2>11. Limitation of Liability</h2>
+            <p>TO THE MAXIMUM EXTENT PERMITTED BY LAW, COLLEGE COMMUNITY SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR ANY LOSS OF PROFITS OR REVENUES, WHETHER INCURRED DIRECTLY OR INDIRECTLY, OR ANY LOSS OF DATA, USE, GOODWILL, OR OTHER INTANGIBLE LOSSES, RESULTING FROM:</p>
+            <ul>
+                <li>Your access to or use of (or inability to access or use) the Service</li>
+                <li>Any conduct or content of any third party on the Service</li>
+                <li>Any content obtained from the Service</li>
+                <li>Unauthorized access, use, or alteration of your transmissions or content</li>
+            </ul>
+        </section>
+        
+        <!-- Indemnification -->
+        <section class="terms-section">
+            <h2>12. Indemnification</h2>
+            <p>You agree to indemnify, defend, and hold harmless College Community, its officers, directors, employees, and agents from and against any claims, liabilities, damages, losses, costs, or expenses (including reasonable attorneys' fees) arising out of or in any way connected with:</p>
+            <ul>
+                <li>Your access to or use of the Service</li>
+                <li>Your violation of these Terms</li>
+                <li>Your violation of any third-party rights</li>
+                <li>Your User Content</li>
+            </ul>
+        </section>
+        
+        <!-- Changes to Terms -->
+        <section class="terms-section">
+            <h2>13. Changes to Terms</h2>
+            <p>We reserve the right to modify these Terms at any time. When we make changes:</p>
+            <ul>
+                <li>We will update the "Last Updated" date at the top of this page</li>
+                <li>For material changes, we will notify you via email or in-app notification</li>
+                <li>Your continued use of the Service after changes constitutes acceptance of the modified Terms</li>
+            </ul>
+            <p>If you do not agree to the modified Terms, you must stop using the Service.</p>
+        </section>
+        
+        <!-- Governing Law -->
+        <section class="terms-section">
+            <h2>14. Governing Law</h2>
+            <p>These Terms shall be governed by and construed in accordance with applicable laws, without regard to conflict of law principles. Any disputes arising from these Terms or your use of the Service shall be resolved through appropriate legal channels.</p>
+        </section>
+        
+        <!-- Severability -->
+        <section class="terms-section">
+            <h2>15. Severability</h2>
+            <p>If any provision of these Terms is found to be unenforceable or invalid, that provision shall be limited or eliminated to the minimum extent necessary, and the remaining provisions shall remain in full force and effect.</p>
+        </section>
+        
+        <!-- Entire Agreement -->
+        <section class="terms-section">
+            <h2>16. Entire Agreement</h2>
+            <p>These Terms, together with our Privacy Policy, constitute the entire agreement between you and College Community regarding your use of the Service and supersede any prior agreements.</p>
+        </section>
+        
+        <!-- Contact Us -->
+        <div class="contact-box">
+            <h3>Questions About These Terms?</h3>
+            <p>If you have any questions about these Terms of Service, please contact us:</p>
+            <p>
+                <strong>Email:</strong> <a href="mailto:support@collegecommunity.app">support@collegecommunity.app</a>
+            </p>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer>
+        <a href="index.html">Home</a>
+        <a href="privacy.html">Privacy Policy</a>
+        <a href="terms.html">Terms of Service</a>
+        <a href="mailto:support@collegecommunity.app">Contact</a>
+        <p>&copy; 2026 College Community. All rights reserved.</p>
+    </footer>
+</body>
+</html>
