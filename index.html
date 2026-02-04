@@ -6,7 +6,8 @@
     <title>College Community - Connect with Your Campus</title>
     <meta name="description" content="College Community is a mobile app for university students to communicate, share academic resources, and connect with classmates through department feeds and group chats.">
     <meta name="keywords" content="college, university, students, academic, campus, community, chat, Q&A">
-    <link rel="icon" type="image/png" href="icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="icon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
     
     <!-- Open Graph -->
     <meta property="og:title" content="College Community - Connect with Your Campus">
@@ -108,9 +109,9 @@
         }
         
         .nav-logo img {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
         }
         
         .nav-logo span {
@@ -730,6 +731,12 @@
             box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);
         }
         
+        .email-input-group button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
         /* Footer */
         footer {
             padding: 48px 20px;
@@ -1116,12 +1123,93 @@
             }
         });
         
-        // Form submission
-        function handleSubmit(e) {
+        // Form submission with validation and Discord webhook
+        const submittedEmails = new Set(JSON.parse(localStorage.getItem('submittedEmails') || '[]'));
+        
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+        
+        async function sendToDiscord(email) {
+            const webhookUrl = 'https://discord.com/api/webhooks/1468674861332172862/i_JBnNlkVv-IVrI9L0dTqxQz6L8QFnHKv5mG4pGx2wMNPD2QBcMxg9cv6Zzb7YXou1Dw';
+            
+            const payload = {
+                embeds: [{
+                    title: '📧 New Email Subscription',
+                    description: `A new user wants to be notified!`,
+                    color: 0x8b5cf6,
+                    fields: [
+                        {
+                            name: 'Email',
+                            value: email,
+                            inline: true
+                        },
+                        {
+                            name: 'Timestamp',
+                            value: new Date().toLocaleString(),
+                            inline: true
+                        }
+                    ],
+                    footer: {
+                        text: 'College Community - Notify Me Form'
+                    }
+                }]
+            };
+            
+            const response = await fetch(webhookUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+            
+            return response.ok;
+        }
+        
+        async function handleSubmit(e) {
             e.preventDefault();
-            const email = e.target.querySelector('input').value;
-            alert('Thanks for joining! We\'ll notify you at ' + email + ' when we launch.');
-            e.target.reset();
+            const input = e.target.querySelector('input');
+            const button = e.target.querySelector('button');
+            const email = input.value.trim().toLowerCase();
+            
+            // Validate email format
+            if (!isValidEmail(email)) {
+                alert('Please enter a valid email address.');
+                return;
+            }
+            
+            // Check for duplicates
+            if (submittedEmails.has(email)) {
+                alert('This email has already been registered. We\'ll notify you when we launch!');
+                return;
+            }
+            
+            // Disable button during submission
+            button.disabled = true;
+            button.textContent = 'Sending...';
+            
+            try {
+                const success = await sendToDiscord(email);
+                
+                if (success) {
+                    // Save email to prevent duplicates
+                    submittedEmails.add(email);
+                    localStorage.setItem('submittedEmails', JSON.stringify([...submittedEmails]));
+                    
+                    alert('Thanks for joining! We\'ll notify you at ' + email + ' when we launch.');
+                    e.target.reset();
+                } else {
+                    alert('Something went wrong. Please try again later.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Something went wrong. Please try again later.');
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Notify Me';
+            }
         }
         
         // Smooth scroll for nav links
