@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Opening Post...</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f0f2f5;
+      color: #333;
+    }
+    .container {
+      text-align: center;
+      padding: 20px;
+    }
+    h2 {
+      margin-bottom: 10px;
+    }
+    p {
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Opening College Community App...</h2>
+    <p>If you don't have the app installed, you will be redirected shortly.</p>
+  </div>
+
+  <script>
+    window.onload = function() {
+      // Extract the post ID from the URL path (e.g. /post/12345)
+      var pathParts = window.location.pathname.split('/post/');
+      var postId = pathParts.length > 1 ? pathParts[1] : null;
+
+      if (postId) {
+        // Attempt to immediately open the app via custom scheme
+        window.location.href = "collegecommunity://post/" + postId;
+        
+        // Fallback: If they don't have the app installed, redirect to app store after 2 secs
+        setTimeout(function() {
+          // Replace this URL with your actual App Store or Google Play link
+          window.location.href = "https://your-app-store-link.com"; 
+        }, 2000);
+      } else {
+        // If there's no postId in the URL, redirect to the home page
+        window.location.href = "/";
+      }
+    }
+  </script>
+</body>
+</html>
