@@ -81,7 +81,7 @@
             overflow-x: hidden;
         }
         
-        /* Stunning Animated Background */
+        /* Ultra-Crisp Dark Geometric Network */
         .bg-container {
             position: fixed;
             top: 0;
@@ -90,50 +90,26 @@
             height: 100%;
             z-index: -1;
             overflow: hidden;
-            background-color: var(--bg-primary);
+            background-color: #050508;
             pointer-events: none;
         }
-        
+
         .ambient-orb {
             position: absolute;
             border-radius: 50%;
-            filter: blur(80px);
-            opacity: 0.6;
+            filter: blur(100px);
+            opacity: 0.25;
             will-change: transform;
         }
         
-        .orb-1 {
-            width: 600px;
-            height: 600px;
-            background: rgba(99, 102, 241, 0.2);
-            top: -100px;
-            left: -100px;
-            animation: floatOrb 20s infinite alternate ease-in-out;
-        }
-        
-        .orb-2 {
-            width: 500px;
-            height: 500px;
-            background: rgba(139, 92, 246, 0.15);
-            bottom: -50px;
-            right: -100px;
-            animation: floatOrb 15s infinite alternate-reverse ease-in-out;
-        }
-        
-        .orb-3 {
-            width: 400px;
-            height: 400px;
-            background: rgba(168, 85, 247, 0.12);
-            top: 40%;
-            left: 30%;
-            animation: floatOrb 18s infinite alternate ease-in-out;
-        }
+        .orb-1 { width: 500px; height: 500px; background: rgba(59, 130, 246, 0.15); top: -100px; left: -100px; animation: floatOrb 25s infinite alternate ease-in-out; }
+        .orb-2 { width: 400px; height: 400px; background: rgba(139, 92, 246, 0.15); bottom: -50px; right: -100px; animation: floatOrb 20s infinite alternate-reverse ease-in-out; }
+        .orb-3 { width: 300px; height: 300px; background: rgba(168, 85, 247, 0.12); top: 40%; left: 30%; animation: floatOrb 22s infinite alternate ease-in-out; }
         
         @keyframes floatOrb {
             0% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(30px, -50px) scale(1.1); }
-            66% { transform: translate(-20px, 20px) scale(0.9); }
-            100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(20px, -30px) scale(1.05); }
+            100% { transform: translate(-15px, 15px) scale(0.95); }
         }
 
         #bg-canvas {
@@ -142,8 +118,6 @@
             left: 0;
             width: 100%;
             height: 100%;
-            opacity: 0.9;
-            mix-blend-mode: screen;
         }
         
         /* Navigation */
@@ -1164,8 +1138,15 @@
             });
         }
         
-        // Initial check on load
-        window.addEventListener('load', reveal);
+        // Initial check on load or immediately if already loaded
+        if (document.readyState === 'complete') {
+            reveal();
+        } else {
+            window.addEventListener('load', reveal);
+        }
+        
+        // Immediate call as failsafe
+        reveal();
         
         // Check on scroll with throttle for performance
         let ticking = false;
@@ -1190,26 +1171,30 @@
             });
         });
         
-        /* Advanced Background Animation */
+        /* Ultra-Crisp High-End Node Network */
         const canvas = document.getElementById('bg-canvas');
-        const ctx = canvas.getContext('2d');
-        const orbs = [
-            document.querySelector('.orb-1'),
-            document.querySelector('.orb-2'),
-            document.querySelector('.orb-3')
-        ];
+        const ctx = canvas.getContext('2d', { alpha: true });
         
         let width, height;
         let particles = [];
         
         const mouse = { x: -1000, y: -1000, radius: 250, smoothX: -1000, smoothY: -1000 };
-        let scrollY = 0;
-        let lastScrollY = 0;
+        let scrollY = window.scrollY;
+        let lastScrollY = scrollY;
         let scrollVelocity = 0;
         
         function resize() {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
+            const dpr = window.devicePixelRatio || 1;
+            width = window.innerWidth;
+            height = window.innerHeight;
+            
+            canvas.width = width * dpr;
+            canvas.height = height * dpr;
+            ctx.scale(dpr, dpr);
+            
+            canvas.style.width = width + 'px';
+            canvas.style.height = height + 'px';
+            
             initParticles();
         }
         
@@ -1218,6 +1203,21 @@
         window.addEventListener('mousemove', (e) => {
             mouse.x = e.clientX;
             mouse.y = e.clientY;
+        });
+        
+        window.addEventListener('click', () => {
+            if (mouse.smoothX !== -1000) {
+                particles.forEach(p => {
+                    let dx = mouse.smoothX - p.x;
+                    let dy = mouse.smoothY - p.y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < 400) {
+                        let force = (400 - distance) / 400;
+                        p.vx -= (dx / distance) * force * 15;
+                        p.vy -= (dy / distance) * force * 15;
+                    }
+                });
+            }
         });
         
         window.addEventListener('touchmove', (e) => {
@@ -1234,52 +1234,84 @@
         }, {passive: true});
         
         class Particle {
-            constructor() {
-                this.x = Math.random() * width;
-                this.y = Math.random() * height;
-                this.size = Math.random() * 2.5 + 0.5;
+            constructor(isSpawner = false, x, y) {
+                this.x = x !== undefined ? x : Math.random() * width;
+                this.y = y !== undefined ? y : (isSpawner ? -20 : Math.random() * height);
+                this.size = Math.random() * 1.5 + 0.5;
+                this.vx = (Math.random() - 0.5) * 0.4;
+                this.vy = isSpawner ? (Math.random() * 1.2 + 0.6) : (Math.random() - 0.5) * 0.4;
                 this.baseX = this.x;
                 this.baseY = this.y;
-                this.density = (Math.random() * 30) + 1;
-                this.angle = Math.random() * Math.PI * 2;
-                this.speed = Math.random() * 0.4 + 0.1;
-                const colors = ['#6366f1', '#8b5cf6', '#a855f7', '#ffffff', '#818cf8'];
-                this.color = colors[Math.floor(Math.random() * colors.length)];
+                this.density = (Math.random() * 20) + 1;
+                this.life = isSpawner ? Math.random() * 150 + 100 : Infinity;
+                this.maxLife = this.life;
+                this.isSpawner = isSpawner;
+
+                const colors = ['rgba(255,255,255,0.7)', 'rgba(139, 92, 246, 0.7)', 'rgba(99, 102, 241, 0.7)'];
+                this.colorBase = colors[Math.floor(Math.random() * colors.length)];
+                this.color = this.colorBase;
             }
             
             update() {
-                // Natural movement
-                this.angle += 0.005;
-                this.x += Math.cos(this.angle) * this.speed;
-                this.y += Math.sin(this.angle) * this.speed;
+                this.x += this.vx;
+                this.y += this.vy;
                 
-                // Parallax on scroll
-                this.y -= scrollVelocity * (this.size * 0.4);
+                // Friction
+                this.vx *= 0.99;
+                this.vy *= 0.99;
                 
-                // Screen wrapping
-                if (this.x > width + 20) this.x = -20;
-                else if (this.x < -20) this.x = width + 20;
+                if (!this.isSpawner) {
+                    this.vx += (Math.random() - 0.5) * 0.02;
+                    this.vy += (Math.random() - 0.5) * 0.02;
+                } else {
+                    this.life--;
+                    if (this.life < 60) {
+                        this.color = this.colorBase.replace('0.7)', `${(this.life / 60) * 0.7})`);
+                    }
+                }
                 
-                if (this.y > height + 20) this.y = -20;
-                else if (this.y < -20) this.y = height + 20;
+                const maxSpeed = this.isSpawner ? 2.0 : 1.2;
+                let speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                if (speed > maxSpeed && mouse.smoothX === -1000) {
+                    this.vx = (this.vx / speed) * maxSpeed;
+                    this.vy = (this.vy / speed) * maxSpeed;
+                }
                 
-                // Interactive forces if mouse is active
+                this.y -= scrollVelocity * (this.size * 0.3);
+                
+                if (this.x > width + 50) this.x = -50;
+                else if (this.x < -50) this.x = width + 50;
+                
+                if (!this.isSpawner) {
+                    if (this.y > height + 50) this.y = -50;
+                    else if (this.y < -50) this.y = height + 50;
+                }
+                
                 if (mouse.smoothX !== -1000) {
                     let dx = mouse.smoothX - this.x;
                     let dy = mouse.smoothY - this.y;
                     let distance = Math.sqrt(dx * dx + dy * dy);
                     
-                    if (distance < mouse.radius) {
-                        let force = (mouse.radius - distance) / mouse.radius;
-                        // Organic Repel
-                        let moveX = (dx / distance) * force * this.density * 0.6;
-                        let moveY = (dy / distance) * force * this.density * 0.6;
-                        this.x -= moveX;
-                        this.y -= moveY;
+                    // UNIQUE PATTERN: Collect in a ring around the mouse
+                    const targetRadius = 140; // The "Pattern" radius
+                    if (distance < mouse.radius * 2) {
+                        let force = (mouse.radius * 2 - distance) / (mouse.radius * 2);
                         
-                        // Swirl effect
-                        this.x += (dy / distance) * force * this.density * 0.8;
-                        this.y -= (dx / distance) * force * this.density * 0.8;
+                        // 1. Attraction/Repulsion towards the target radius (not the center!)
+                        let pull = (distance - targetRadius) * 0.0005 * this.density;
+                        this.vx += (dx / distance) * pull * force;
+                        this.vy += (dy / distance) * pull * force;
+                        
+                        // 2. Orbital spin (Clockwise)
+                        let spin = 0.08 * force * (this.density / 10);
+                        this.vx += (dy / distance) * spin;
+                        this.vy -= (dx / distance) * spin;
+                        
+                        // Damping near the target to stabilize the pattern
+                        if (Math.abs(distance - targetRadius) < 20) {
+                            this.vx *= 0.95;
+                            this.vy *= 0.95;
+                        }
                     }
                 }
             }
@@ -1288,17 +1320,13 @@
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
                 ctx.fillStyle = this.color;
-                // Add soft glow
-                ctx.shadowBlur = 10;
-                ctx.shadowColor = this.color;
                 ctx.fill();
-                ctx.shadowBlur = 0; // reset
             }
         }
         
         function initParticles() {
             particles = [];
-            const particleCount = Math.min(Math.floor((width * height) / 9000), 120);
+            const particleCount = Math.min(Math.floor((width * height) / 6000), 220); // More initial density
             for (let i = 0; i < particleCount; i++) {
                 particles.push(new Particle());
             }
@@ -1306,16 +1334,21 @@
         
         function drawConstellations() {
             for (let i = 0; i < particles.length; i++) {
-                for (let j = i; j < particles.length; j++) {
+                let limit = 0;
+                for (let j = i + 1; j < particles.length && limit < 5; j++) { // Performance cap
                     let dx = particles[i].x - particles[j].x;
                     let dy = particles[i].y - particles[j].y;
                     let distance = Math.sqrt(dx * dx + dy * dy);
                     
-                    if (distance < 140) {
-                        let opacity = 0.15 - (distance / 140) * 0.15;
+                    if (distance < 130) {
+                        limit++;
+                        let opacity = 0.18 - (distance / 130) * 0.18;
+                        if (particles[i].life < 60) opacity *= (particles[i].life / 60);
+                        if (particles[j].life < 60) opacity *= (particles[j].life / 60);
+                        
                         ctx.beginPath();
                         ctx.strokeStyle = `rgba(139, 92, 246, ${opacity})`;
-                        ctx.lineWidth = 1.5;
+                        ctx.lineWidth = 0.8;
                         ctx.moveTo(particles[i].x, particles[i].y);
                         ctx.lineTo(particles[j].x, particles[j].y);
                         ctx.stroke();
@@ -1327,36 +1360,63 @@
         function animate() {
             ctx.clearRect(0, 0, width, height);
             
+            let mouseMoved = false;
             if (mouse.x !== -1000) {
                 if(mouse.smoothX === -1000) {
                     mouse.smoothX = mouse.x;
                     mouse.smoothY = mouse.y;
                 } else {
-                    mouse.smoothX += (mouse.x - mouse.smoothX) * 0.08;
-                    mouse.smoothY += (mouse.y - mouse.smoothY) * 0.08;
+                    const dx = mouse.x - mouse.smoothX;
+                    const dy = mouse.y - mouse.smoothY;
+                    if (Math.abs(dx) > 1 || Math.abs(dy) > 1) mouseMoved = true;
+                    mouse.smoothX += dx * 0.1;
+                    mouse.smoothY += dy * 0.1;
                 }
             }
             
-            // Subtle orb panning to react to mouse & scroll
-            const scrollOffset = scrollY * 0.3;
-            if (mouse.smoothX !== -1000) {
-                const panX = (mouse.smoothX - width/2) * -0.04;
-                const panY = (mouse.smoothY - height/2) * -0.04;
-                
-                orbs[0].style.transform = `translate(${panX}px, ${panY - scrollOffset}px)`;
-                orbs[1].style.transform = `translate(${-panX * 1.5}px, ${-panY * 1.5 - scrollOffset*0.8}px)`;
-                orbs[2].style.transform = `translate(${panX * 0.5}px, ${panY * 0.5 - scrollOffset*1.2}px)`;
-            } else {
-                orbs[0].style.transform = `translateY(${-scrollOffset}px)`;
-                orbs[1].style.transform = `translateY(${-scrollOffset*0.8}px)`;
-                orbs[2].style.transform = `translateY(${-scrollOffset*1.2}px)`;
+            // INCREASED SPAWNING
+            // 1. Ambient rain
+            if (Math.random() < 0.08) { 
+                particles.push(new Particle(true));
+            }
+            // 2. Trail spawning (when mouse moves)
+            if (mouseMoved && Math.random() < 0.3) {
+                particles.push(new Particle(true, mouse.smoothX + (Math.random()-0.5)*20, mouse.smoothY + (Math.random()-0.5)*20));
             }
             
-            for (let i = 0; i < particles.length; i++) {
+            // Max particles limit for performance
+            if (particles.length > 400) {
+                for(let k=0; k<particles.length; k++) {
+                    if(particles[k].isSpawner && particles[k].life > 60) {
+                        particles[k].life = 60; // Make them fade out faster
+                        break;
+                    }
+                }
+            }
+            
+            for (let i = particles.length - 1; i >= 0; i--) {
                 particles[i].update();
                 particles[i].draw();
+                
+                if (particles[i].life <= 0 || (particles[i].isSpawner && particles[i].y > height + 50)) {
+                    particles.splice(i, 1);
+                }
             }
+            
             drawConstellations();
+            
+            if (mouse.smoothX !== -1000) {
+                let gradient = ctx.createRadialGradient(
+                    mouse.smoothX, mouse.smoothY, 0,
+                    mouse.smoothX, mouse.smoothY, mouse.radius * 0.8
+                );
+                gradient.addColorStop(0, 'rgba(139, 92, 246, 0.06)');
+                gradient.addColorStop(1, 'rgba(139, 92, 246, 0)');
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(mouse.smoothX, mouse.smoothY, mouse.radius * 0.8, 0, Math.PI * 2);
+                ctx.fill();
+            }
             
             scrollVelocity *= 0.9;
             if (Math.abs(scrollVelocity) < 0.1) scrollVelocity = 0;
@@ -1364,14 +1424,17 @@
             requestAnimationFrame(animate);
         }
         
-        // Reset mouse on leave
         window.addEventListener('mouseout', () => {
             mouse.x = -1000;
             mouse.y = -1000;
+            mouse.smoothX = -1000;
+            mouse.smoothY = -1000;
         });
         
-        resize();
-        animate();
+        setTimeout(() => {
+            resize();
+            animate();
+        }, 100);
     </script>
 </body>
 </html>
