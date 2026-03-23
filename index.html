@@ -217,6 +217,7 @@
             text-align: center;
             padding: 140px 20px 100px;
             position: relative;
+            user-select: none;
         }
         
         .hero::after {
@@ -285,6 +286,7 @@
             margin-bottom: 56px;
             font-weight: 400;
             line-height: 1.7;
+            user-select: none;
         }
         
         /* Store Buttons - Premium Design */
@@ -1179,6 +1181,8 @@
         let particles = [];
         
         const mouse = { x: -1000, y: -1000, radius: 250, smoothX: -1000, smoothY: -1000 };
+        let isHolding = false;
+        let chargeLevel = 0;
         let scrollY = window.scrollY;
         let lastScrollY = scrollY;
         let scrollVelocity = 0;
@@ -1205,20 +1209,64 @@
             mouse.y = e.clientY;
         });
         
-        window.addEventListener('click', () => {
+        window.addEventListener('mousedown', () => {
+            isHolding = true;
+        });
+
+        window.addEventListener('mouseup', () => {
+            if (isHolding) {
+                explode();
+                isHolding = false;
+                chargeLevel = 0;
+            }
+        });
+
+        window.addEventListener('touchstart', (e) => {
+            isHolding = true;
+            if(e.touches.length > 0) {
+                mouse.x = e.touches[0].clientX;
+                mouse.y = e.touches[0].clientY;
+            }
+        });
+
+        window.addEventListener('touchend', () => {
+            if (isHolding) {
+                explode();
+                isHolding = false;
+                chargeLevel = 0;
+            }
+        });
+
+        function explode() {
             if (mouse.smoothX !== -1000) {
+                const forceMultiplier = 5 + (chargeLevel * 45); // Scale explosion with charge
+                const explosionRadius = 300 + (chargeLevel * 600);
+                
                 particles.forEach(p => {
                     let dx = mouse.smoothX - p.x;
                     let dy = mouse.smoothY - p.y;
                     let distance = Math.sqrt(dx * dx + dy * dy);
-                    if (distance < 400) {
-                        let force = (400 - distance) / 400;
-                        p.vx -= (dx / distance) * force * 15;
-                        p.vy -= (dy / distance) * force * 15;
+                    if (distance < explosionRadius) {
+                        let force = (explosionRadius - distance) / explosionRadius;
+                        // Use a steeper falloff for the explosion force
+                        let power = Math.pow(force, 1.5) * forceMultiplier;
+                        p.vx -= (dx / distance) * power;
+                        p.vy -= (dy / distance) * power;
+                        
+                        // Add some randomness to the explosion
+                        p.vx += (Math.random() - 0.5) * power * 0.5;
+                        p.vy += (Math.random() - 0.5) * power * 0.5;
+                        
+                        // Give them a "boosted" life if they were part of the explosion
+                        if (p.isSpawner) p.life = Math.max(p.life, 40);
                     }
                 });
+                
+                // Add a screenshake effect by temporarily moving the canvas
+                canvas.style.transform = `translate(${(Math.random()-0.5)*20*chargeLevel}px, ${(Math.random()-0.5)*20*chargeLevel}px)`;
+                setTimeout(() => { canvas.style.transform = ''; }, 50);
             }
-        });
+        }
         
         window.addEventListener('touchmove', (e) => {
             if(e.touches.length > 0) {
@@ -1250,6 +1298,9 @@
                 const colors = ['rgba(255,255,255,0.7)', 'rgba(139, 92, 246, 0.7)', 'rgba(99, 102, 241, 0.7)'];
                 this.colorBase = colors[Math.floor(Math.random() * colors.length)];
                 this.color = this.colorBase;
+                this.h = 240;
+                this.l = 50;
+                this.glow = 0;
             }
             
             update() {
@@ -1292,22 +1343,35 @@
                     let dy = mouse.smoothY - this.y;
                     let distance = Math.sqrt(dx * dx + dy * dy);
                     
-                    // UNIQUE PATTERN: Collect in a ring around the mouse
-                    const targetRadius = 140; // The "Pattern" radius
-                    if (distance < mouse.radius * 2) {
-                        let force = (mouse.radius * 2 - distance) / (mouse.radius * 2);
+                    // UNIQUE PATTERN: Collect in a ring, but suck into center when holding
+                    let targetRadius = isHolding ? (20 + (1 - chargeLevel) * 120) : 140; 
+                    if (distance < mouse.radius * (isHolding ? 3 : 2)) {
+                        let force = (mouse.radius * (isHolding ? 3 : 2) - distance) / (mouse.radius * (isHolding ? 3 : 2));
                         
-                        // 1. Attraction/Repulsion towards the target radius (not the center!)
-                        let pull = (distance - targetRadius) * 0.0005 * this.density;
+                        // 1. Attraction/Repulsion towards the target radius
+                        let pullStrength = isHolding ? 0.002 : 0.0005;
+                        let pull = (distance - targetRadius) * pullStrength * this.density;
                         this.vx += (dx / distance) * pull * force;
                         this.vy += (dy / distance) * pull * force;
                         
-                        // 2. Orbital spin (Clockwise)
-                        let spin = 0.08 * force * (this.density / 10);
+                        // 2. Orbital spin
+                        let spinStrength = isHolding ? (0.15 + chargeLevel * 0.3) : 0.08;
+                        let spin = spinStrength * force * (this.density / 10);
                         this.vx += (dy / distance) * spin;
                         this.vy -= (dx / distance) * spin;
                         
-                        // Damping near the target to stabilize the pattern
+                        // When holding, particles get "hotter"
+                        if (isHolding && distance < 200) {
+                            this.glow = chargeLevel;
+                            this.h = 240 + (chargeLevel * 120); // Shift towards white/gold/red
+                            this.l = 50 + (chargeLevel * 50);
+                            this.color = `hsla(${this.h}, 80%, ${this.l}%, ${0.7 + chargeLevel * 0.3})`;
+                        } else if (!isHolding) {
+                            this.glow *= 0.95;
+                            this.color = this.colorBase;
+                        }
+
+                        // Damping near the target
                         if (Math.abs(distance - targetRadius) < 20) {
                             this.vx *= 0.95;
                             this.vy *= 0.95;
@@ -1318,9 +1382,18 @@
             
             draw() {
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.arc(this.x, this.y, this.size * (1 + this.glow * 1.5), 0, Math.PI * 2);
                 ctx.fillStyle = this.color;
                 ctx.fill();
+                
+                // Draw a small second, more transparent circle for glow instead of using shadowBlur
+                if (this.glow > 0.1) {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size * (3 + this.glow * 4), 0, Math.PI * 2);
+                    const alpha = this.glow * 0.2;
+                    ctx.fillStyle = `hsla(${this.h}, 80%, ${this.l}%, ${alpha})`;
+                    ctx.fill();
+                }
             }
         }
         
@@ -1333,22 +1406,27 @@
         }
         
         function drawConstellations() {
+            // Restore richness while being mindful of performance
+            const maxDistance = 140;
+            const drawProb = isHolding ? 0.6 : 1;
+            
             for (let i = 0; i < particles.length; i++) {
+                if (drawProb < 1 && Math.random() > drawProb) continue;
                 let limit = 0;
-                for (let j = i + 1; j < particles.length && limit < 5; j++) { // Performance cap
+                for (let j = i + 1; j < particles.length && limit < 4; j++) { 
                     let dx = particles[i].x - particles[j].x;
                     let dy = particles[i].y - particles[j].y;
                     let distance = Math.sqrt(dx * dx + dy * dy);
                     
-                    if (distance < 130) {
+                    if (distance < maxDistance) {
                         limit++;
-                        let opacity = 0.18 - (distance / 130) * 0.18;
+                        let opacity = 0.18 - (distance / maxDistance) * 0.18;
                         if (particles[i].life < 60) opacity *= (particles[i].life / 60);
                         if (particles[j].life < 60) opacity *= (particles[j].life / 60);
                         
                         ctx.beginPath();
                         ctx.strokeStyle = `rgba(139, 92, 246, ${opacity})`;
-                        ctx.lineWidth = 0.8;
+                        ctx.lineWidth = 0.7;
                         ctx.moveTo(particles[i].x, particles[i].y);
                         ctx.lineTo(particles[j].x, particles[j].y);
                         ctx.stroke();
@@ -1383,9 +1461,22 @@
             if (mouseMoved && Math.random() < 0.3) {
                 particles.push(new Particle(true, mouse.smoothX + (Math.random()-0.5)*20, mouse.smoothY + (Math.random()-0.5)*20));
             }
+            // 3. Charge spawning
+            if (isHolding) {
+                chargeLevel = Math.min(chargeLevel + 0.005, 1);
+                // Spawn "energy" particles less frequently
+                if (Math.random() < 0.4) {
+                    const count = Math.floor(chargeLevel * 10) + 1;
+                    for(let i=0; i<count; i++) {
+                        const angle = Math.random() * Math.PI * 2;
+                        const dist = 150 + Math.random() * 200;
+                        particles.push(new Particle(true, mouse.smoothX + Math.cos(angle)*dist, mouse.smoothY + Math.sin(angle)*dist));
+                    }
+                }
+            }
             
             // Max particles limit for performance
-            if (particles.length > 400) {
+            if (particles.length > 1500) {
                 for(let k=0; k<particles.length; k++) {
                     if(particles[k].isSpawner && particles[k].life > 60) {
                         particles[k].life = 60; // Make them fade out faster
@@ -1406,16 +1497,36 @@
             drawConstellations();
             
             if (mouse.smoothX !== -1000) {
+                let glowRadius = mouse.radius * (0.8 + chargeLevel * 1.5);
                 let gradient = ctx.createRadialGradient(
                     mouse.smoothX, mouse.smoothY, 0,
-                    mouse.smoothX, mouse.smoothY, mouse.radius * 0.8
+                    mouse.smoothX, mouse.smoothY, glowRadius
                 );
-                gradient.addColorStop(0, 'rgba(139, 92, 246, 0.06)');
-                gradient.addColorStop(1, 'rgba(139, 92, 246, 0)');
+                
+                if (isHolding) {
+                    gradient.addColorStop(0, `rgba(255, 255, 255, ${0.1 * chargeLevel})`);
+                    gradient.addColorStop(0.2, `rgba(139, 92, 246, ${0.15 * chargeLevel})`);
+                    gradient.addColorStop(1, 'rgba(139, 92, 246, 0)');
+                } else {
+                    gradient.addColorStop(0, 'rgba(139, 92, 246, 0.06)');
+                    gradient.addColorStop(1, 'rgba(139, 92, 246, 0)');
+                }
+                
                 ctx.fillStyle = gradient;
                 ctx.beginPath();
-                ctx.arc(mouse.smoothX, mouse.smoothY, mouse.radius * 0.8, 0, Math.PI * 2);
+                ctx.arc(mouse.smoothX, mouse.smoothY, glowRadius, 0, Math.PI * 2);
                 ctx.fill();
+                
+                // Draw a core flare when charging
+                if (isHolding && chargeLevel > 0.2) {
+                    ctx.beginPath();
+                    ctx.arc(mouse.smoothX, mouse.smoothY, 2 + chargeLevel * 8, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${chargeLevel})`;
+                    ctx.shadowBlur = 20 * chargeLevel;
+                    ctx.shadowColor = 'white';
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                }
             }
             
             scrollVelocity *= 0.9;
@@ -1429,6 +1540,18 @@
             mouse.y = -1000;
             mouse.smoothX = -1000;
             mouse.smoothY = -1000;
+            isHolding = false;
+            chargeLevel = 0;
+        });
+
+        window.addEventListener('mouseleave', () => {
+            isHolding = false;
+            chargeLevel = 0;
+        });
+
+        window.addEventListener('touchcancel', () => {
+            isHolding = false;
+            chargeLevel = 0;
         });
         
         setTimeout(() => {
