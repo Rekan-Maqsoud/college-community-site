@@ -1199,6 +1199,9 @@
             canvas.style.width = width + 'px';
             canvas.style.height = height + 'px';
             
+            // Adjust interaction radius for mobile
+            mouse.radius = width < 768 ? 150 : 250;
+            
             initParticles();
         }
         
@@ -1344,7 +1347,12 @@
                     let distance = Math.sqrt(dx * dx + dy * dy);
                     
                     // UNIQUE PATTERN: Collect in a ring, but suck into center when holding
-                    let targetRadius = isHolding ? (20 + (1 - chargeLevel) * 120) : 140; 
+                    // Reduced base radius for web (140 -> 120) and phone (~80)
+                    const baseRadius = width < 768 ? 80 : 120;
+                    // Shrink gathering circle even more on mobile during hold
+                    const holdMultiplier = width < 768 ? 0.4 : 0.85;
+                    const minHoldRadius = width < 768 ? 10 : 20;
+                    let targetRadius = isHolding ? (minHoldRadius + (1 - chargeLevel) * (baseRadius * holdMultiplier)) : baseRadius; 
                     if (distance < mouse.radius * (isHolding ? 3 : 2)) {
                         let force = (mouse.radius * (isHolding ? 3 : 2) - distance) / (mouse.radius * (isHolding ? 3 : 2));
                         
@@ -1476,7 +1484,8 @@
             }
             
             // Max particles limit for performance
-            if (particles.length > 1500) {
+            const maxParticles = width < 768 ? 900 : 1500;
+            if (particles.length > maxParticles) {
                 for(let k=0; k<particles.length; k++) {
                     if(particles[k].isSpawner && particles[k].life > 60) {
                         particles[k].life = 60; // Make them fade out faster
