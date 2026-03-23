@@ -1484,7 +1484,7 @@
             }
             
             // Max particles limit for performance
-            const maxParticles = width < 768 ? 900 : 1500;
+            const maxParticles = width < 768 ? 400 : 1500;
             if (particles.length > maxParticles) {
                 for(let k=0; k<particles.length; k++) {
                     if(particles[k].isSpawner && particles[k].life > 60) {
