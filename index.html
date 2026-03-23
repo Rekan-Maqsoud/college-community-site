@@ -81,8 +81,8 @@
             overflow-x: hidden;
         }
         
-        /* Animated Background */
-        .bg-animation {
+        /* Stunning Animated Background */
+        .bg-container {
             position: fixed;
             top: 0;
             left: 0;
@@ -90,33 +90,60 @@
             height: 100%;
             z-index: -1;
             overflow: hidden;
+            background-color: var(--bg-primary);
+            pointer-events: none;
         }
         
-        .bg-animation::before {
-            content: '';
+        .ambient-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.6;
+            will-change: transform;
+        }
+        
+        .orb-1 {
+            width: 600px;
+            height: 600px;
+            background: rgba(99, 102, 241, 0.2);
+            top: -100px;
+            left: -100px;
+            animation: floatOrb 20s infinite alternate ease-in-out;
+        }
+        
+        .orb-2 {
+            width: 500px;
+            height: 500px;
+            background: rgba(139, 92, 246, 0.15);
+            bottom: -50px;
+            right: -100px;
+            animation: floatOrb 15s infinite alternate-reverse ease-in-out;
+        }
+        
+        .orb-3 {
+            width: 400px;
+            height: 400px;
+            background: rgba(168, 85, 247, 0.12);
+            top: 40%;
+            left: 30%;
+            animation: floatOrb 18s infinite alternate ease-in-out;
+        }
+        
+        @keyframes floatOrb {
+            0% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+            100% { transform: translate(0, 0) scale(1); }
+        }
+
+        #bg-canvas {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: 
-                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
-                radial-gradient(ellipse 60% 40% at 80% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
-                radial-gradient(ellipse 60% 40% at 20% 80%, rgba(99, 102, 241, 0.06) 0%, transparent 50%);
-        }
-        
-        .bg-grid {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            background-image: 
-                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-            background-size: 60px 60px;
-            mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, black 30%, transparent 70%);
+            opacity: 0.9;
+            mix-blend-mode: screen;
         }
         
         /* Navigation */
@@ -905,8 +932,12 @@
     </style>
 </head>
 <body>
-    <div class="bg-animation"></div>
-    <div class="bg-grid"></div>
+    <div class="bg-container">
+        <div class="ambient-orb orb-1"></div>
+        <div class="ambient-orb orb-2"></div>
+        <div class="ambient-orb orb-3"></div>
+        <canvas id="bg-canvas"></canvas>
+    </div>
     
     <!-- Navigation -->
     <nav>
@@ -1159,14 +1190,188 @@
             });
         });
         
-        // Parallax effect on scroll for background elements
-        window.addEventListener('scroll', () => {
-            const scrolled = window.pageYOffset;
-            const bgGrid = document.querySelector('.bg-grid');
-            if (bgGrid) {
-                bgGrid.style.transform = `translateY(${scrolled * 0.1}px)`;
-            }
+        /* Advanced Background Animation */
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        const orbs = [
+            document.querySelector('.orb-1'),
+            document.querySelector('.orb-2'),
+            document.querySelector('.orb-3')
+        ];
+        
+        let width, height;
+        let particles = [];
+        
+        const mouse = { x: -1000, y: -1000, radius: 250, smoothX: -1000, smoothY: -1000 };
+        let scrollY = 0;
+        let lastScrollY = 0;
+        let scrollVelocity = 0;
+        
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            initParticles();
+        }
+        
+        window.addEventListener('resize', resize);
+        
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
         });
+        
+        window.addEventListener('touchmove', (e) => {
+            if(e.touches.length > 0) {
+                mouse.x = e.touches[0].clientX;
+                mouse.y = e.touches[0].clientY;
+            }
+        }, {passive: true});
+        
+        window.addEventListener('scroll', () => {
+            scrollY = window.scrollY;
+            scrollVelocity = scrollY - lastScrollY;
+            lastScrollY = scrollY;
+        }, {passive: true});
+        
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.size = Math.random() * 2.5 + 0.5;
+                this.baseX = this.x;
+                this.baseY = this.y;
+                this.density = (Math.random() * 30) + 1;
+                this.angle = Math.random() * Math.PI * 2;
+                this.speed = Math.random() * 0.4 + 0.1;
+                const colors = ['#6366f1', '#8b5cf6', '#a855f7', '#ffffff', '#818cf8'];
+                this.color = colors[Math.floor(Math.random() * colors.length)];
+            }
+            
+            update() {
+                // Natural movement
+                this.angle += 0.005;
+                this.x += Math.cos(this.angle) * this.speed;
+                this.y += Math.sin(this.angle) * this.speed;
+                
+                // Parallax on scroll
+                this.y -= scrollVelocity * (this.size * 0.4);
+                
+                // Screen wrapping
+                if (this.x > width + 20) this.x = -20;
+                else if (this.x < -20) this.x = width + 20;
+                
+                if (this.y > height + 20) this.y = -20;
+                else if (this.y < -20) this.y = height + 20;
+                
+                // Interactive forces if mouse is active
+                if (mouse.smoothX !== -1000) {
+                    let dx = mouse.smoothX - this.x;
+                    let dy = mouse.smoothY - this.y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < mouse.radius) {
+                        let force = (mouse.radius - distance) / mouse.radius;
+                        // Organic Repel
+                        let moveX = (dx / distance) * force * this.density * 0.6;
+                        let moveY = (dy / distance) * force * this.density * 0.6;
+                        this.x -= moveX;
+                        this.y -= moveY;
+                        
+                        // Swirl effect
+                        this.x += (dy / distance) * force * this.density * 0.8;
+                        this.y -= (dx / distance) * force * this.density * 0.8;
+                    }
+                }
+            }
+            
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                // Add soft glow
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = this.color;
+                ctx.fill();
+                ctx.shadowBlur = 0; // reset
+            }
+        }
+        
+        function initParticles() {
+            particles = [];
+            const particleCount = Math.min(Math.floor((width * height) / 9000), 120);
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+        }
+        
+        function drawConstellations() {
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i; j < particles.length; j++) {
+                    let dx = particles[i].x - particles[j].x;
+                    let dy = particles[i].y - particles[j].y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < 140) {
+                        let opacity = 0.15 - (distance / 140) * 0.15;
+                        ctx.beginPath();
+                        ctx.strokeStyle = `rgba(139, 92, 246, ${opacity})`;
+                        ctx.lineWidth = 1.5;
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+        
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            
+            if (mouse.x !== -1000) {
+                if(mouse.smoothX === -1000) {
+                    mouse.smoothX = mouse.x;
+                    mouse.smoothY = mouse.y;
+                } else {
+                    mouse.smoothX += (mouse.x - mouse.smoothX) * 0.08;
+                    mouse.smoothY += (mouse.y - mouse.smoothY) * 0.08;
+                }
+            }
+            
+            // Subtle orb panning to react to mouse & scroll
+            const scrollOffset = scrollY * 0.3;
+            if (mouse.smoothX !== -1000) {
+                const panX = (mouse.smoothX - width/2) * -0.04;
+                const panY = (mouse.smoothY - height/2) * -0.04;
+                
+                orbs[0].style.transform = `translate(${panX}px, ${panY - scrollOffset}px)`;
+                orbs[1].style.transform = `translate(${-panX * 1.5}px, ${-panY * 1.5 - scrollOffset*0.8}px)`;
+                orbs[2].style.transform = `translate(${panX * 0.5}px, ${panY * 0.5 - scrollOffset*1.2}px)`;
+            } else {
+                orbs[0].style.transform = `translateY(${-scrollOffset}px)`;
+                orbs[1].style.transform = `translateY(${-scrollOffset*0.8}px)`;
+                orbs[2].style.transform = `translateY(${-scrollOffset*1.2}px)`;
+            }
+            
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+            }
+            drawConstellations();
+            
+            scrollVelocity *= 0.9;
+            if (Math.abs(scrollVelocity) < 0.1) scrollVelocity = 0;
+            
+            requestAnimationFrame(animate);
+        }
+        
+        // Reset mouse on leave
+        window.addEventListener('mouseout', () => {
+            mouse.x = -1000;
+            mouse.y = -1000;
+        });
+        
+        resize();
+        animate();
     </script>
 </body>
 </html>
