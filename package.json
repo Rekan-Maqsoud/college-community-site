@@ -1,0 +1,23 @@
+{
+  "name": "college-community-site",
+  "version": "1.0.0",
+  "description": "College Community - A mobile app landing page for university students to communicate, share academic resources, and connect with classmates",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Rekan-Maqsoud/college-community-site.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Rekan-Maqsoud/college-community-site/issues"
+  },
+  "homepage": "https://github.com/Rekan-Maqsoud/college-community-site#readme",
+  "dependencies": {
+    "@vercel/analytics": "^2.0.1"
+  }
+}
