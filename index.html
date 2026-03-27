@@ -1186,6 +1186,39 @@
         let scrollY = window.scrollY;
         let lastScrollY = scrollY;
         let scrollVelocity = 0;
+
+        function clamp01(value) {
+            return Math.max(0, Math.min(1, value));
+        }
+
+        function getGatherRadius(isHolding, chargeLevel, width) {
+            const baseRadius = width < 768 ? 70 : 120;
+            const minRadius = width < 768 ? 28 : 50;
+
+            if (!isHolding) {
+                return baseRadius;
+            }
+
+            const collapse = Math.pow(clamp01(chargeLevel), 1.8);
+            return baseRadius - (baseRadius - minRadius) * collapse;
+        }
+
+        function getChargeColor(particle, chargeLevel, alphaBoost = 0) {
+            const progress = clamp01(chargeLevel);
+            const colorStops = [0, 24, 52, 95, 155, 205, 260, 318, 360];
+            const stage = Math.min(colorStops.length - 2, Math.floor(progress * (colorStops.length - 1)));
+            const stageProgress = progress * (colorStops.length - 1) - stage;
+            const hue = colorStops[stage] + (colorStops[stage + 1] - colorStops[stage]) * stageProgress + particle.hueSeed;
+            const saturation = progress > 0.94 ? Math.max(0, 70 - ((progress - 0.94) / 0.06) * 70) : 92 - progress * 72;
+            const lightness = progress > 0.94 ? 78 + ((progress - 0.94) / 0.06) * 20 : 46 + progress * 26;
+            const alpha = 0.65 + progress * 0.3 + alphaBoost;
+
+            if (progress >= 0.985) {
+                return `rgba(255, 255, 255, ${Math.min(1, alpha)})`;
+            }
+
+            return `hsla(${(hue + 360) % 360}, ${Math.max(10, saturation)}%, ${Math.min(100, lightness)}%, ${Math.min(1, alpha)})`;
+        }
         
         function resize() {
             const dpr = window.devicePixelRatio || 1;
@@ -1200,7 +1233,7 @@
             canvas.style.height = height + 'px';
             
             // Adjust interaction radius for mobile
-            mouse.radius = width < 768 ? 150 : 250;
+            mouse.radius = width < 768 ? 100 : 250;
             
             initParticles();
         }
@@ -1242,8 +1275,8 @@
 
         function explode() {
             if (mouse.smoothX !== -1000) {
-                const forceMultiplier = 5 + (chargeLevel * 45); // Scale explosion with charge
-                const explosionRadius = 300 + (chargeLevel * 600);
+                const forceMultiplier = 8 + (chargeLevel * 62); // Scale explosion with charge
+                const explosionRadius = 140 + (chargeLevel * 900);
                 
                 particles.forEach(p => {
                     let dx = mouse.smoothX - p.x;
@@ -1297,6 +1330,7 @@
                 this.life = isSpawner ? Math.random() * 150 + 100 : Infinity;
                 this.maxLife = this.life;
                 this.isSpawner = isSpawner;
+                this.hueSeed = Math.random() * 24 - 12;
 
                 const colors = ['rgba(255,255,255,0.7)', 'rgba(139, 92, 246, 0.7)', 'rgba(99, 102, 241, 0.7)'];
                 this.colorBase = colors[Math.floor(Math.random() * colors.length)];
@@ -1345,44 +1379,49 @@
                     let dx = mouse.smoothX - this.x;
                     let dy = mouse.smoothY - this.y;
                     let distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < 0.001) distance = 0.001;
                     
-                    // UNIQUE PATTERN: Collect in a ring, but suck into center when holding
-                    // Reduced base radius for web (140 -> 120) and phone (~80)
-                    const baseRadius = width < 768 ? 80 : 120;
-                    // Shrink gathering circle even more on mobile during hold
-                    const holdMultiplier = width < 768 ? 0.4 : 0.85;
-                    const minHoldRadius = width < 768 ? 10 : 20;
-                    let targetRadius = isHolding ? (minHoldRadius + (1 - chargeLevel) * (baseRadius * holdMultiplier)) : baseRadius; 
+                    // Pull into a tighter and tighter fuse before the burst.
+                    let targetRadius = getGatherRadius(isHolding, chargeLevel, width);
                     if (distance < mouse.radius * (isHolding ? 3 : 2)) {
                         let force = (mouse.radius * (isHolding ? 3 : 2) - distance) / (mouse.radius * (isHolding ? 3 : 2));
                         
                         // 1. Attraction/Repulsion towards the target radius
-                        let pullStrength = isHolding ? 0.002 : 0.0005;
+                        const fuseProgress = Math.pow(chargeLevel, 2.2);
+                        let pullStrength = isHolding ? (0.0004 + fuseProgress * 0.004) : 0.0002;
                         let pull = (distance - targetRadius) * pullStrength * this.density;
                         this.vx += (dx / distance) * pull * force;
                         this.vy += (dy / distance) * pull * force;
                         
                         // 2. Orbital spin
-                        let spinStrength = isHolding ? (0.15 + chargeLevel * 0.3) : 0.08;
+                        let spinStrength = isHolding ? (0.2 - fuseProgress * 0.14) : 0.08;
                         let spin = spinStrength * force * (this.density / 10);
                         this.vx += (dy / distance) * spin;
                         this.vy -= (dx / distance) * spin;
                         
-                        // When holding, particles get "hotter"
-                        if (isHolding && distance < 200) {
-                            this.glow = chargeLevel;
-                            this.h = 240 + (chargeLevel * 120); // Shift towards white/gold/red
-                            this.l = 50 + (chargeLevel * 50);
-                            this.color = `hsla(${this.h}, 80%, ${this.l}%, ${0.7 + chargeLevel * 0.3})`;
+                        // When holding, particles move through the full color sweep before whitening.
+                        if (isHolding && distance < 260) {
+                            this.glow = chargeLevel > 0.96 ? 0.35 : Math.min(0.9, 0.15 + chargeLevel * 0.75);
+                            this.color = getChargeColor(this, chargeLevel);
+                            if (chargeLevel > 0.96) {
+                                this.h = 0;
+                                this.l = 100;
+                            }
                         } else if (!isHolding) {
                             this.glow *= 0.95;
                             this.color = this.colorBase;
                         }
 
                         // Damping near the target
-                        if (Math.abs(distance - targetRadius) < 20) {
-                            this.vx *= 0.95;
-                            this.vy *= 0.95;
+                        if (Math.abs(distance - targetRadius) < 24) {
+                            const settle = isHolding ? 0.9 - fuseProgress * 0.08 : 0.95;
+                            this.vx *= settle;
+                            this.vy *= settle;
+                        }
+
+                        if (isHolding && chargeLevel > 0.9) {
+                            this.vx *= 0.985;
+                            this.vy *= 0.985;
                         }
                     }
                 }
@@ -1397,7 +1436,7 @@
                 // Draw a small second, more transparent circle for glow instead of using shadowBlur
                 if (this.glow > 0.1) {
                     ctx.beginPath();
-                    ctx.arc(this.x, this.y, this.size * (3 + this.glow * 4), 0, Math.PI * 2);
+                    ctx.arc(this.x, this.y, this.size * (2.2 + this.glow * 2.2), 0, Math.PI * 2);
                     const alpha = this.glow * 0.2;
                     ctx.fillStyle = `hsla(${this.h}, 80%, ${this.l}%, ${alpha})`;
                     ctx.fill();
@@ -1471,20 +1510,27 @@
             }
             // 3. Charge spawning
             if (isHolding) {
-                chargeLevel = Math.min(chargeLevel + 0.005, 1);
+                chargeLevel = Math.min(chargeLevel + 0.003, 1);
                 // Spawn "energy" particles less frequently
                 if (Math.random() < 0.4) {
                     const count = Math.floor(chargeLevel * 10) + 1;
                     for(let i=0; i<count; i++) {
                         const angle = Math.random() * Math.PI * 2;
-                        const dist = 150 + Math.random() * 200;
-                        particles.push(new Particle(true, mouse.smoothX + Math.cos(angle)*dist, mouse.smoothY + Math.sin(angle)*dist));
+                        const dist = Math.random() * 50;
+                        const spawnX = mouse.smoothX + Math.cos(angle) * dist;
+                        const spawnY = mouse.smoothY + Math.sin(angle) * dist;
+                        const particle = new Particle(true, spawnX, spawnY);
+                        const towardMouse = Math.atan2(mouse.smoothY - spawnY, mouse.smoothX - spawnX);
+                        const speed = 0.8 + Math.random() * 1.8;
+                        particle.vx = Math.cos(towardMouse) * speed + (Math.random() - 0.5) * 0.4;
+                        particle.vy = Math.sin(towardMouse) * speed + (Math.random() - 0.5) * 0.4;
+                        particles.push(particle);
                     }
                 }
             }
             
             // Max particles limit for performance
-            const maxParticles = width < 768 ? 400 : 1500;
+            const maxParticles = width < 768 ? 200 : 1000;
             if (particles.length > maxParticles) {
                 for(let k=0; k<particles.length; k++) {
                     if(particles[k].isSpawner && particles[k].life > 60) {
@@ -1513,8 +1559,8 @@
                 );
                 
                 if (isHolding) {
-                    gradient.addColorStop(0, `rgba(255, 255, 255, ${0.1 * chargeLevel})`);
-                    gradient.addColorStop(0.2, `rgba(139, 92, 246, ${0.15 * chargeLevel})`);
+                    gradient.addColorStop(0, `rgba(139, 92, 246, ${0.06 + chargeLevel * 0.03})`);
+                    gradient.addColorStop(0.22, `rgba(139, 92, 246, ${0.12 + chargeLevel * 0.08})`);
                     gradient.addColorStop(1, 'rgba(139, 92, 246, 0)');
                 } else {
                     gradient.addColorStop(0, 'rgba(139, 92, 246, 0.06)');
@@ -1529,10 +1575,10 @@
                 // Draw a core flare when charging
                 if (isHolding && chargeLevel > 0.2) {
                     ctx.beginPath();
-                    ctx.arc(mouse.smoothX, mouse.smoothY, 2 + chargeLevel * 8, 0, Math.PI * 2);
-                    ctx.fillStyle = `rgba(255, 255, 255, ${chargeLevel})`;
-                    ctx.shadowBlur = 20 * chargeLevel;
-                    ctx.shadowColor = 'white';
+                    ctx.arc(mouse.smoothX, mouse.smoothY, 2 + chargeLevel * 9, 0, Math.PI * 2);
+                    ctx.fillStyle = getChargeColor({ hueSeed: 0 }, chargeLevel, 0.1);
+                    ctx.shadowBlur = 24 * chargeLevel;
+                    ctx.shadowColor = chargeLevel > 0.96 ? 'white' : ctx.fillStyle;
                     ctx.fill();
                     ctx.shadowBlur = 0;
                 }
